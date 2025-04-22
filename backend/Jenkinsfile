@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        GITHUB_REPO = 'your-org/your-repo'
+        GITHUB_REPO = 'https://github.com/1997y/cn2t4-bank-project.git'
         TARGET_URL = "http://localhost:8000"  // OWASP ZAP 대상
     }
 
