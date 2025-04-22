@@ -1,67 +1,44 @@
 pipeline {
     agent any
 
-    environment {
-        GITHUB_REPO = 'https://github.com/1997y/cn2t4-bank-project.git'
-        TARGET_URL = "http://localhost:8000"  // OWASP ZAP 대상
-    }
-
     stages {
         stage('Checkout') {
             steps {
+                // Checkout the GitHub repository
                 checkout scm
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Build') {
             steps {
-                sh '''
-                npm install
-                pip install bandit
-                '''
+                // Build the project
+                sh 'mvn clean install'
             }
         }
 
-        stage('ESLint') {
+        stage('Test') {
             steps {
-                sh 'npx eslint . -f html -o eslint-report.html || true'
+                // Run the tests
+                sh 'mvn test'
             }
         }
 
-        stage('Bandit') {
+        stage('Deploy') {
             steps {
-                sh 'bandit -r . -f html -o bandit-report.html || true'
-            }
-        }
-
-        stage('OWASP ZAP') {
-            steps {
-                sh '''
-                docker run -v $(pwd):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py -t ${TARGET_URL} -r zap-report.html || true
-                '''
+                // Deploy the application
+                sh 'mvn deploy'
             }
         }
     }
 
     post {
         always {
-            publishHTML (target: [
-                reportDir: '.', 
-                reportFiles: 'eslint-report.html', 
-                reportName: 'ESLint Report'
-            ])
-            publishHTML (target: [
-                reportDir: '.', 
-                reportFiles: 'bandit-report.html', 
-                reportName: 'Bandit Report'
-            ])
-            publishHTML (target: [
-                reportDir: '.', 
-                reportFiles: 'zap-report.html', 
-                reportName: 'OWASP ZAP Report'
-            ])
-
-            archiveArtifacts artifacts: '*.html', allowEmptyArchive: true
+            // Notify the team about the build status
+            slackSend(
+                channel: '#your-channel',
+                color: currentBuild.result == 'SUCCESS' ? 'good' : 'danger',
+                message: "${currentBuild.result}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
+            )
         }
     }
 }
