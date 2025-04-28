@@ -1,6 +1,12 @@
 pipeline {
     agent any
 
+    environment {
+        COMPOSE_PROJECT_NAME = 'bank-project'
+        DOCKERHUB_CREDENTIALS = credentials('docker-hub-credentials')  // 옵션, 나중에 쓰고 싶으면
+        GIT_COMMIT_HASH = ''
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -16,6 +22,28 @@ pipeline {
                     echo "Git Commit Hash: ${GIT_COMMIT_HASH}"
                 }
             }
+        }
+
+        stage('Build and Run with Docker Compose') {
+            steps {
+                script {
+                    sh '''
+                        echo "✅ Docker Compose Build 시작"
+                        docker-compose down || true
+                        docker-compose build
+                        docker-compose up -d
+                    '''
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo '🏗️ Docker Compose Build & Up 성공!'
+        }
+        failure {
+            echo '❌ Docker Compose 실패'
         }
     }
 }
