@@ -8,37 +8,3 @@ pipeline {
                 checkout scm
             }
         }
-
-        stage('Build') {
-            steps {
-                // Build the project
-                sh 'mvn clean install'
-            }
-        }
-
-        stage('Test') {
-            steps {
-                // Run the tests
-                sh 'mvn test'
-            }
-        }
-
-        stage('Deploy') {
-            steps {
-                // Deploy the application
-                sh 'mvn deploy'
-            }
-        }
-    }
-
-    post {
-        always {
-            // Notify the team about the build status
-            slackSend(
-                channel: '#your-channel',
-                color: currentBuild.result == 'SUCCESS' ? 'good' : 'danger',
-                message: "${currentBuild.result}: Job '${env.JOB_NAME} [${env.BUILD_NUMBER}]' (${env.BUILD_URL})"
-            )
-        }
-    }
-}
