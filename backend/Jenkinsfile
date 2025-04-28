@@ -10,7 +10,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Checkout the GitHub repository
+                echo "🔄 Git Checkout 시작"   
                 checkout scm
             }
         }
@@ -24,18 +24,12 @@ pipeline {
             }
         }
 
-        stage('Build and Run with Docker Compose') {
-            steps {
-                script {
-                    sh '''
-                        echo "✅ Docker Compose Build 시작"
-                        docker-compose down || true
-                        docker-compose build
-                        docker-compose up -d
-                    '''
+        stage('Build Docker Image') {
+                steps {
+                    // 도커 이미지 빌드
+                    sh 'docker build -t your-docker-image-name .'
                 }
             }
-        }
     }
 
     post {
