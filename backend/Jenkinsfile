@@ -9,4 +9,12 @@ pipeline {
             }
         }
     }
+        stage('Set Git Commit Hash') {
+        steps {
+            script {
+                GIT_COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                echo "Git Commit Hash: ${GIT_COMMIT_HASH}"
+            }
+        }
+    }
 }
